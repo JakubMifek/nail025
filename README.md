@@ -1,2 +1,2 @@
-# nail025
+# NAIL025
 Evolutionary Algorithms - NAIL025 - MFF UK
