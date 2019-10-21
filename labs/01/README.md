@@ -12,4 +12,4 @@ Výsledné grafy jsou:
 <img src="./no_cx_onemax.png" />
 <img src="./no_mut_onemax.png" />
 
-V zip archivu můžete najít zdrojové kódy a logy použité k vygenerování grafů.
+V archivu můžete najít zdrojové kódy a logy použité k vygenerování grafů.
