@@ -1,0 +1,5 @@
+*.zip
+*.tar.gz
+.vscode
+.pynb_checkpoints
+__pycache__
