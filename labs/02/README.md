@@ -49,3 +49,5 @@ Parametry v názvu souboru:
 |      ms | pravděpodobnost výměny předmětu               |
 |      dc | pravděpodobnost divide&conquer mutace         |
 |       r | počet opakování                               |
+
+Bohužel jsem nestihl nechat dopočítat finální řešení s optimálním výsledkem. Proto není součástí grafu a je pouze přiloženo v .zip souboru.
