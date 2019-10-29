@@ -3,3 +3,7 @@
 .vscode
 .pynb_checkpoints
 __pycache__
+log*
+*.best*
+*.fitness*
+*.objective*

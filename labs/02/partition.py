@@ -5,19 +5,30 @@ import functools
 import utils
 
 K = 10  # number of piles
-POP_SIZE = 100  # population size
-MAX_GEN = 500  # maximum number of generations
-CX_PROB = 0.8  # crossover probability
-MUT_PROB = 0.2  # mutation probability
-MUT_FLIP_PROB = 0.1  # probability of chaninging value during mutation
+POP_SIZE = 800  # population size
+MAX_GEN = 20000 # maximum number of generations
+CX_PROB = 0.0  # crossover probability
+DIV_CON_PROB = 0.05 # probability of divide and conquer mutation
+MUT_PROB = 0.001  # mutation probability (flip)
+MUT_PROB_2 = 0.05  # mutation probability (switch)
+MUT_FLIP_PROB = 0.02  # probability of chaninging value during mutation
+MUT_SWITCH_PROB = 0.15  # probability of chaninging value during mutation
 REPEATS = 10  # number of runs of algorithm (should be at least 10)
-OUT_DIR = 'partition'  # output directory for logs
+SURVIVES = 10 # number of survivors
+OUT_DIR = 'final_better_11'  # output directory for logs
 # the ID of this experiment (used to create log names)
-EXP_ID = 'k{}_p{}_g{}_x{}_m{}_mf{}_r{}'.format(
-    K, POP_SIZE, MAX_GEN, CX_PROB, MUT_PROB, MUT_FLIP_PROB, REPEATS)
+EXP_ID = 'k{}-p{}-g{}-s{}-x{}-m{}-mf{}-ms{}-dc{}-r{}(tuned)'.format(
+    K, POP_SIZE, MAX_GEN, SURVIVES, CX_PROB, MUT_PROB, MUT_FLIP_PROB, MUT_SWITCH_PROB, DIV_CON_PROB, REPEATS)
 
 # reads the input set of values of objects
 
+# Vymena namisto presunu
+# Zamena zatizena pravdepodobnosti - zalezi na vaze hromadky
+# Mutace predmetu zatizena pravdepodobnosti vahou predmetu ? netestovano yet ?
+
+# ~Rozdeleni a slouceni hromadek ? nejlehci a nejtezsi ?~
+# ~Inteligentni inicializace hromadek (s lehkou randomizaci)~
+# ~Informovane prehozeni z tezke hromadky na lehkou~
 
 def read_weights(filename):
     with open(filename) as f:
@@ -41,11 +52,42 @@ def fitness(ind, weights):
     return utils.FitObjPair(fitness=1/(max(bw) - min(bw) + 1),
                             objective=max(bw) - min(bw))
 
+def better_fitness(ind, weights):
+    bw = bin_weights(weights, ind)
+    M = sum(bw)/len(bw)
+    S = sum(map(lambda w: (w-M)**2, bw)) ** (1/len(bw))
+    return utils.FitObjPair(fitness=1/(S+1),
+                            objective=max(bw) - min(bw))
+
+def best_fitness(ind, weights):
+    bw = bin_weights(weights, ind)
+    M = sum(bw)/len(bw)
+    S = sum(map(lambda w: abs(w-M), bw))
+    F = 0.99**S
+    return utils.FitObjPair(fitness=F,
+                            objective=S)
+
 # creates the individual
 
 
 def create_ind(ind_len):
     return [random.randrange(0, K) for _ in range(ind_len)]
+
+
+def create_ind_intelligent(ind_len, weights, bins, indx):
+    r = np.ones((ind_len,), dtype=np.int16) * -1
+    b = np.zeros((bins,))
+    B = list(range(bins))
+
+    for idx in indx:
+        S = max(b)
+        SS = sum(np.abs(b - S) ** 1.5)
+        c = np.random.choice(B, 1, p=(np.abs(
+            b - S) ** 1.5)/SS if S != 0 else [1/bins]*bins)
+        b[c] += weights[idx]
+        r[idx] = c
+
+    return r
 
 # creates the population using the create individual function
 
@@ -58,6 +100,7 @@ def create_pop(pop_size, create_individual):
 
 def roulette_wheel_selection(pop, fits, k):
     return random.choices(pop, fits, k=k)
+
 
 # implements the one-point crossover of two individuals
 
@@ -73,6 +116,36 @@ def one_pt_cross(p1, p2):
 
 def flip_mutate(p, prob, upper):
     return [random.randrange(0, upper) if random.random() < prob else i for i in p]
+
+
+def switch_mutate(p, prob, weights):
+    W = bin_weights(weights, p)
+    L = np.argmin(W)
+    H = np.argmax(W)
+
+    return [i if (i != L and i != H) or random.random() > prob else L for i in p]
+
+def divide_and_conquer(p, weights):
+    W = bin_weights(weights, p)
+    L = np.argmin(W)
+    H = np.argmax(W)
+
+    items = []
+    for i in range(len(p)):
+        if p[i] == L or p[i] == H:
+            items.append(i)
+    items.sort(key=lambda item: weights[item])
+
+    lW = 0
+    hW = 0
+    for i in range(len(items)):
+        if lW <= hW:
+            p[items[i]] = L
+            lW += weights[items[i]]
+        else:
+            p[items[i]] = H
+            hW += weights[items[i]]
+
 
 # applies a list of genetic operators (functions with 1 argument - population)
 # to the population
@@ -123,18 +196,28 @@ def mutation(pop, mutate, mut_prob):
 
 def evolutionary_algorithm(pop, max_gen, fitness, operators, mate_sel, *, map_fn=map, log=None):
     evals = 0
-    for G in range(max_gen):
+    for _ in range(max_gen):
         fits_objs = list(map_fn(fitness, pop))
         evals += len(pop)
         if log:
             log.add_gen(fits_objs, evals)
-        fits = [f.fitness for f in fits_objs]
-        objs = [f.objective for f in fits_objs]
-
+        fits = np.array([f.fitness for f in fits_objs])
+        max_fit = max(fits)
+        fits /= max_fit
+        _ = [f.objective for f in fits_objs]
+        
+        sample = list(range(len(fits)))
+        sample.sort(key=lambda k: -fits[k])
+        
+        survivors = []
+        for i in range(SURVIVES):
+            survivors.append(pop[sample[i]])
+            
         mating_pool = mate_sel(pop, fits, POP_SIZE)
         offspring = mate(mating_pool, operators)
         pop = offspring[:]
-
+        pop += survivors
+        
     return pop
 
 
@@ -144,11 +227,18 @@ if __name__ == '__main__':
 
     # use `functool.partial` to create fix some arguments of the functions
     # and create functions with required signatures
-    cr_ind = functools.partial(create_ind, ind_len=len(weights))
-    fit = functools.partial(fitness, weights=weights)
+    indx = list(range(len(weights)))
+    indx.sort(key=lambda item: weights[item])
+
+    cr_ind = functools.partial(
+        create_ind_intelligent, ind_len=len(weights), weights=weights, bins=K, indx=indx)
+    fit = functools.partial(better_fitness, weights=weights)
     xover = functools.partial(crossover, cross=one_pt_cross, cx_prob=CX_PROB)
     mut = functools.partial(mutation, mut_prob=MUT_PROB,
                             mutate=functools.partial(flip_mutate, prob=MUT_FLIP_PROB, upper=K))
+    mut2 = functools.partial(mutation, mut_prob=MUT_PROB_2,
+                             mutate=functools.partial(switch_mutate, prob=MUT_SWITCH_PROB, weights=weights))
+    mut3 = functools.partial(mutation, mut_prob=DIV_CON_PROB, mutate=functools.partial(divide_and_conquer, weights=weights))
 
     # we can use multiprocessing to evaluate fitness in parallel
     import multiprocessing
@@ -167,7 +257,7 @@ if __name__ == '__main__':
         pop = create_pop(POP_SIZE, cr_ind)
         # run evolution - notice we use the pool.map as the map_fn
         pop = evolutionary_algorithm(pop, MAX_GEN, fit, [
-                                     xover, mut], roulette_wheel_selection, map_fn=pool.map, log=log)
+                                     xover, mut, mut2], roulette_wheel_selection, map_fn=pool.map, log=log)
         # remember the best individual from last generation, save it to file
         bi = max(pop, key=fit)
         best_inds.append(bi)

@@ -33,6 +33,7 @@ def plot_experiment(evals, lower, mean, upper, legend_name=''):
 
 def get_experiment_stats(prefix, exp_id, stat_type='objective'):
     data = []
+    print(f'{prefix}/{exp_id}_*.{stat_type}')
     for fn in glob.glob(f'{prefix}/{exp_id}_*.{stat_type}'):
         evals, stats = read_run_file(fn)
         data.append(pd.Series([s.max for s in stats], index=evals))
@@ -104,7 +105,7 @@ def plot_experiments(prefix, exp_ids, rename_dict=None, stat_type='objective'):
         plt.ylabel('Objective value')
     if stat_type == 'fitness':
         plt.ylabel('Fitness value')
-
+    plt.show()
 
 # a tuple for the stats about a single generation
 GenStats = namedtuple('GenStats', ['min', 'max', 'mean'])
