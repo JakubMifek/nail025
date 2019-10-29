@@ -9,23 +9,43 @@ V rámci domácího úkolu jsem upravil soubor `partition.py` následujícím zp
 
 $$(\sum_(i=0)^N((mean-weight_i)^2))^(1/N)$$
 
-Poté jsem vyzkoušel několik běhů s různými parametry. Nejlepší výsledek jakého se mi podařilo dosáhnout je rozdíl **_2_**. Bohužel se mi nepodařilo najít optimum. Pravděpodobně jsem měl spustit výpočty na více generacích nebo vyzkoušet ještě další mutace nebo parametry.
+Poté jsem vyzkoušel několik běhů s různými parametry. Nejlepší výsledek jakého se mi podařilo dosáhnout je rozdíl **_0_**.
+
+Nastavení:
+```python
+K = 10  # number of piles
+POP_SIZE = 800  # population size
+MAX_GEN = 20000 # maximum number of generations
+CX_PROB = 0.0  # crossover probability
+DIV_CON_PROB = 0.05 # probability of divide and conquer mutation
+MUT_PROB = 0.001  # mutation probability (flip)
+MUT_PROB_2 = 0.05  # mutation probability (switch)
+MUT_FLIP_PROB = 0.02  # probability of chaninging value during mutation
+MUT_SWITCH_PROB = 0.15  # probability of chaninging value during mutation
+REPEATS = 10  # number of runs of algorithm (should be at least 10)
+SURVIVES = 10 # number of survivors
+OUT_DIR = 'final_better_11'  # output directory for logs
+# the ID of this experiment (used to create log names)
+EXP_ID = 'k{}-p{}-g{}-s{}-x{}-m{}-mf{}-ms{}-dc{}-r{}(tuned)'.format(
+    K, POP_SIZE, MAX_GEN, SURVIVES, CX_PROB, MUT_PROB, MUT_FLIP_PROB, MUT_SWITCH_PROB, DIV_CON_PROB, REPEATS)
+```
 
 Grafy výsledků:
 <img src="./Figure_1.png"/>
 <img src="./Figure_2.png"/>
 
 Parametry v názvu souboru:
-|zkratka|význam|
-|--:|:--|
-|k|počet hromádek|
-|p|velikost populace|
-|g|maximální generace|
-|s|počet přeživších z minulé generace|
-|x|pravděpodobnost křížení|
-|m|pravděpodobnost klasické mutace|
-|m2|pravděpodobnost switch mutace (zapomněl jsem)|
-|mf|pravděpodobnost přehození předmětu|
-|ms|pravděpodobnost výměny předmětu|
-|dc|pravděpodobnost divide&conquer mutace|
-|r|počet opakování|
+
+| zkratka | význam                                        |
+| ------: | :-------------------------------------------- |
+|       k | počet hromádek                                |
+|       p | velikost populace                             |
+|       g | maximální generace                            |
+|       s | počet přeživších z minulé generace            |
+|       x | pravděpodobnost křížení                       |
+|       m | pravděpodobnost klasické mutace               |
+|      m2 | pravděpodobnost switch mutace (zapomněl jsem) |
+|      mf | pravděpodobnost přehození předmětu            |
+|      ms | pravděpodobnost výměny předmětu               |
+|      dc | pravděpodobnost divide&conquer mutace         |
+|       r | počet opakování                               |
