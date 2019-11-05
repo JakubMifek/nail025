@@ -5,17 +5,17 @@ import functools
 import utils
 
 K = 10  # number of piles
-POP_SIZE = 800  # population size
-MAX_GEN = 20000 # maximum number of generations
+POP_SIZE = 1024  # population size
+MAX_GEN = 20*1024  # maximum number of generations
 CX_PROB = 0.0  # crossover probability
-DIV_CON_PROB = 0.05 # probability of divide and conquer mutation
-MUT_PROB = 0.001  # mutation probability (flip)
-MUT_PROB_2 = 0.05  # mutation probability (switch)
-MUT_FLIP_PROB = 0.02  # probability of chaninging value during mutation
+DIV_CON_PROB = 0.00  # probability of divide and conquer mutation
+MUT_PROB = 0.1  # mutation probability (flip)
+MUT_PROB_2 = 0.00  # mutation probability (switch)
+MUT_FLIP_PROB = 1/500  # probability of chaninging value during mutation
 MUT_SWITCH_PROB = 0.15  # probability of chaninging value during mutation
 REPEATS = 10  # number of runs of algorithm (should be at least 10)
-SURVIVES = 10 # number of survivors
-OUT_DIR = 'final_better_11'  # output directory for logs
+SURVIVES = 10  # number of survivors
+OUT_DIR = 'final_bad_but_better'  # output directory for logs
 # the ID of this experiment (used to create log names)
 EXP_ID = 'k{}-p{}-g{}-s{}-x{}-m{}-mf{}-ms{}-dc{}-r{}(tuned)'.format(
     K, POP_SIZE, MAX_GEN, SURVIVES, CX_PROB, MUT_PROB, MUT_FLIP_PROB, MUT_SWITCH_PROB, DIV_CON_PROB, REPEATS)
@@ -29,6 +29,7 @@ EXP_ID = 'k{}-p{}-g{}-s{}-x{}-m{}-mf{}-ms{}-dc{}-r{}(tuned)'.format(
 # ~Rozdeleni a slouceni hromadek ? nejlehci a nejtezsi ?~
 # ~Inteligentni inicializace hromadek (s lehkou randomizaci)~
 # ~Informovane prehozeni z tezke hromadky na lehkou~
+
 
 def read_weights(filename):
     with open(filename) as f:
@@ -52,12 +53,14 @@ def fitness(ind, weights):
     return utils.FitObjPair(fitness=1/(max(bw) - min(bw) + 1),
                             objective=max(bw) - min(bw))
 
+
 def better_fitness(ind, weights):
     bw = bin_weights(weights, ind)
     M = sum(bw)/len(bw)
     S = sum(map(lambda w: (w-M)**2, bw)) ** (1/len(bw))
     return utils.FitObjPair(fitness=1/(S+1),
                             objective=max(bw) - min(bw))
+
 
 def best_fitness(ind, weights):
     bw = bin_weights(weights, ind)
@@ -124,6 +127,7 @@ def switch_mutate(p, prob, weights):
     H = np.argmax(W)
 
     return [i if (i != L and i != H) or random.random() > prob else L for i in p]
+
 
 def divide_and_conquer(p, weights):
     W = bin_weights(weights, p)
@@ -205,19 +209,19 @@ def evolutionary_algorithm(pop, max_gen, fitness, operators, mate_sel, *, map_fn
         max_fit = max(fits)
         fits /= max_fit
         _ = [f.objective for f in fits_objs]
-        
+
         sample = list(range(len(fits)))
         sample.sort(key=lambda k: -fits[k])
-        
+
         survivors = []
         for i in range(SURVIVES):
             survivors.append(pop[sample[i]])
-            
+
         mating_pool = mate_sel(pop, fits, POP_SIZE)
         offspring = mate(mating_pool, operators)
         pop = offspring[:]
         pop += survivors
-        
+
     return pop
 
 
@@ -238,7 +242,8 @@ if __name__ == '__main__':
                             mutate=functools.partial(flip_mutate, prob=MUT_FLIP_PROB, upper=K))
     mut2 = functools.partial(mutation, mut_prob=MUT_PROB_2,
                              mutate=functools.partial(switch_mutate, prob=MUT_SWITCH_PROB, weights=weights))
-    mut3 = functools.partial(mutation, mut_prob=DIV_CON_PROB, mutate=functools.partial(divide_and_conquer, weights=weights))
+    mut3 = functools.partial(mutation, mut_prob=DIV_CON_PROB, mutate=functools.partial(
+        divide_and_conquer, weights=weights))
 
     # we can use multiprocessing to evaluate fitness in parallel
     import multiprocessing
