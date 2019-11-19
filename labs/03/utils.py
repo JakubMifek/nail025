@@ -98,12 +98,14 @@ def plot_experiments(prefix, exp_ids, rename_dict=None, stat_type='objective'):
     for e in exp_ids:
         evals, lower, mean, upper = get_plot_data(prefix, e, stat_type)
         plot_experiment(evals, lower, mean, upper, rename_dict.get(e, e))
+    plt.yscale('log')
     plt.legend()
     plt.xlabel('Fitness evaluations')
     if stat_type == 'objective':
         plt.ylabel('Objective value')
     if stat_type == 'fitness':
         plt.ylabel('Fitness value')
+    plt.show()
 
 
 # a tuple for the stats about a single generation

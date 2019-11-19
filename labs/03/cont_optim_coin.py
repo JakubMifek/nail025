@@ -8,12 +8,14 @@ import utils
 DIMENSION = 10  # dimension of the problems
 POP_SIZE = 100  # population size
 MAX_GEN = 500  # maximum number of generations
-CX_PROB = 0.8  # crossover probability
+CX_PROB = 0.0  # crossover probability
+C_CX_PROB = 0.8  # intelligent arithmetic crossover probability
+R_CX_PROB = 0.0  # intelligent arithmetic crossover probability
 MUT_PROB = 0.2  # mutation probability
 MUT_STEP = 0.5  # size of the mutation steps
 REPEATS = 10  # number of runs of algorithm (should be at least 10)
 OUT_DIR = 'continuous'  # output directory for logs
-EXP_ID = 'default'  # the ID of this experiment (used to create log names)
+EXP_ID = 'coin'  # the ID of this experiment (used to create log names)
 
 
 # creates the individual
@@ -50,6 +52,20 @@ def one_pt_cross(p1, p2):
     o1 = np.append(p1[:point], p2[point:])
     o2 = np.append(p2[:point], p1[point:])
     return o1, o2
+
+
+def coin_arithmetic_cross(p1, p2):
+    coin = np.random.uniform(size=len(p1))
+    a = 0 + coin
+    b = 1 - coin
+    return a * p1 + b * p2, b * p1 + a * p2
+
+
+def random_arithmetic_cross(p1, p2):
+    w = random.random()
+
+    return w*p1+(1-w)*p2, (1-w)*p1+w*p2
+
 
 # gaussian mutation - we need a class because we want to change the step
 # size of the mutation adaptively
@@ -114,13 +130,13 @@ def mutation(pop, mutate, mut_prob):
 
 def evolutionary_algorithm(pop, max_gen, fitness, operators, mate_sel, mutate_ind, *, map_fn=map, log=None):
     evals = 0
-    for G in range(max_gen):
+    for _ in range(max_gen):
         fits_objs = list(map_fn(fitness, pop))
         evals += len(pop)
         if log:
             log.add_gen(fits_objs, evals)
         fits = [f.fitness for f in fits_objs]
-        objs = [f.objective for f in fits_objs]
+        _ = [f.objective for f in fits_objs]
 
         mating_pool = mate_sel(pop, fits, POP_SIZE)
         offspring = mate(mating_pool, operators)
@@ -144,9 +160,15 @@ if __name__ == '__main__':
 
     for fit_gen, fit_name in zip(fit_generators, fit_names):
         fit = fit_gen(DIMENSION)
+
         mutate_ind = Mutation(step_size=MUT_STEP)
+
         xover = functools.partial(
             crossover, cross=one_pt_cross, cx_prob=CX_PROB)
+        rxover = functools.partial(
+            crossover, cross=random_arithmetic_cross, cx_prob=R_CX_PROB)
+        cxover = functools.partial(
+            crossover, cross=coin_arithmetic_cross, cx_prob=C_CX_PROB)
         mut = functools.partial(mutation, mut_prob=MUT_PROB, mutate=mutate_ind)
 
         # run the algorithm `REPEATS` times and remember the best solutions from
@@ -161,7 +183,7 @@ if __name__ == '__main__':
             pop = create_pop(POP_SIZE, cr_ind)
             # run evolution - notice we use the pool.map as the map_fn
             pop = evolutionary_algorithm(pop, MAX_GEN, fit, [
-                                         xover, mut], tournament_selection, mutate_ind, map_fn=map, log=log)
+                                         cxover, mut], tournament_selection, mutate_ind, map_fn=map, log=log)
             # remember the best individual from last generation, save it to file
             bi = max(pop, key=fit)
             best_inds.append(bi)
