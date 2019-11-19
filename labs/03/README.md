@@ -7,24 +7,24 @@ V rámci domácího úkolu jsem implementoval následující operátory:
 Vážené aritmetické křížení pomocí náhodného parametru. Tedy při křížení vznikají
 dva jedinci:
 
-$ w = randf() $
-$ a = p1 * w + p2 * (1 - w) $
-$ b = p2 * w + p1 * (1 - w) $
+$$ w = randf() $$
+$$ a = p1 * w + p2 * (1 - w) $$
+$$ b = p2 * w + p1 * (1 - w) $$
 
 ### 2. intelligent
 Opět vážené aritmetické křížení, ale vztažené k fitness funkci jedinců:
 
-$ w = p1.fitness / (p1.fitness + p2.fitness) $
-$ a = p1 * w + p2 * (1 - w) $
-$ b = p2 * w + p1 * (1 - w) $
+$$ w = p1.fitness / (p1.fitness + p2.fitness) $$
+$$ a = p1 * w + p2 * (1 - w) $$
+$$ b = p2 * w + p1 * (1 - w) $$
 
 ### 3. coin
 Křížení náhodným výberem parametru z každého jedince. Tedy u každého genu si
 hodím mincí, zda použiji gen z p1 a nebo gen z p2.
 
-$ w = random_vector(len(p1)) $
-$ a = p1 * w + p2 * (1 - w) $
-$ b = p2 * w + p1 * (1 - w) $
+$$ w = random_vector(len(p1)) $$
+$$ a = p1 * w + p2 * (1 - w) $$
+$$ b = p2 * w + p1 * (1 - w) $$
 
 ### 4. adaptive
 Pro každý parametr z jedince přidám proměnnou reprezentující varianci, která má
