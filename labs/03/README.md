@@ -26,7 +26,7 @@ $$ b = p2 * w + p1 * (1 - w) $$
 Křížení náhodným výberem parametru z každého jedince. Tedy u každého genu si
 hodím mincí, zda použiji gen z p1 a nebo gen z p2.
 
-$$ w = random_vector(len(p1)) $$
+$$ w = random\_vector(len(p1)) $$
 
 $$ a = p1 * w + p2 * (1 - w) $$
 

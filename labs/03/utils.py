@@ -5,7 +5,10 @@ import warnings
 
 import pandas as pd
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
+
+# matplotlib.use('TKagg')
 
 # a tuple of fitness value and objective value
 FitObjPair = namedtuple('FitObjPair', ['fitness', 'objective'])
@@ -93,6 +96,7 @@ def read_run_file(filename):
 
 
 def plot_experiments(prefix, exp_ids, rename_dict=None, stat_type='objective'):
+    plt.figure(figsize=(8, 6))
     if not rename_dict:
         rename_dict = dict()
     for e in exp_ids:
@@ -105,7 +109,7 @@ def plot_experiments(prefix, exp_ids, rename_dict=None, stat_type='objective'):
         plt.ylabel('Objective value')
     if stat_type == 'fitness':
         plt.ylabel('Fitness value')
-    plt.show()
+    plt.savefig('plot-{}.png'.format(exp_ids[0].split('.')[1]))
 
 
 # a tuple for the stats about a single generation

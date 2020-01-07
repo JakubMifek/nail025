@@ -134,27 +134,27 @@ f02 = make_f02_ellipsoidal(2)
 f06 = make_f06_attractive_sector(2)
 f08 = make_f08_rosenbrock(2)
 f10 = make_f10_rotated_ellipsoidal(2)
-x = np.random.uniform(-5, 5, size=(2,))
-print(x)
-print(f01(x))
-print(f02(x))
-print(f06(x))
-print(f08(x))
-print(f10(x))
+# x = np.random.uniform(-5, 5, size=(2,))
+# print(x)
+# print(f01(x))
+# print(f02(x))
+# print(f06(x))
+# print(f08(x))
+# print(f10(x))
 
-x = y = np.arange(-5.0, 5.0, 0.05)
-X, Y = np.meshgrid(x, y)
-Z = np.vstack([np.ravel(X), np.ravel(Y)]).T
+# x = y = np.arange(-5.0, 5.0, 0.05)
+# X, Y = np.meshgrid(x, y)
+# Z = np.vstack([np.ravel(X), np.ravel(Y)]).T
 
-f = f10
+# f = f10
 
-zs = []
-for i in range(Z.shape[0]):
-    zs.append(f(Z[i]).objective)
+# zs = []
+# for i in range(Z.shape[0]):
+#     zs.append(f(Z[i]).objective)
 
 
-fig = plt.figure(figsize=(12, 8))
-ax = fig.add_subplot(111, projection='3d')
+# fig = plt.figure(figsize=(12, 8))
+# ax = fig.add_subplot(111, projection='3d')
 
-ax.plot_surface(X, Y, np.reshape(zs, X.shape))
-plt.show()
+# ax.plot_surface(X, Y, np.reshape(zs, X.shape))
+# plt.show()
